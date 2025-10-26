@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Master Korea Itinerary</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top bar (no search) -->
+  <header class="topbar">
+    <div id="topbar-main" class="topbar-row">
+      <h1 class="topbar-title">Master Korea Itinerary</h1>
+      <div class="topbar-spacer"></div>
+      <select id="category" aria-label="Category filter">
+        <option value="__ALL__">All categories</option>
+      </select>
+      <button id="openArchive" class="btn ghost" type="button" title="Open archive">📦 Archive</button>
+    </div>
+
+    <div id="topbar-archive" class="topbar-row hidden">
+      <button id="backToMain" class="btn ghost" type="button" title="Back">← Back</button>
+      <h1 class="topbar-title">Archive</h1>
+      <div class="topbar-spacer"></div>
+    </div>
+  </header>
+
+  <!-- MAIN (single scroll view) -->
+  <main id="view-main" class="view">
+    <section class="results">
+      <div class="results-header">
+        <h2 class="section-title">Attractions</h2>
+        <span id="resultCount" class="muted">0 items</span>
+      </div>
+      <div id="cards" class="cards-stack" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <!-- ARCHIVE (separate page, also scroll view) -->
+  <main id="view-archive" class="view hidden">
+    <section class="results">
+      <div class="results-header">
+        <h2 class="section-title">Archived Items</h2>
+        <span id="archiveCount" class="muted">0 items</span>
+      </div>
+      <div id="archiveCards" class="cards-stack" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <!-- Floating Add Button -->
+  <button id="fabAdd" class="fab" aria-label="Add new item">＋</button>
+
+  <!-- Add Item Modal -->
+  <div id="addModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+      <div class="modal-header">
+        <h3 id="addTitle">Add New Item</h3>
+        <button id="closeModal" class="btn ghost" type="button" aria-label="Close">✕</button>
+      </div>
+      <form id="addForm" class="form-col">
+        <label>
+          <span>Category</span>
+          <input required name="category" placeholder="e.g., Palaces & History" />
+        </label>
+        <label>
+          <span>Name</span>
+          <input required name="name" placeholder="e.g., Gyeongbokgung Palace" />
+        </label>
+        <label>
+          <span>Address</span>
+          <textarea name="address" placeholder="Street, District, City" required></textarea>
+        </label>
+        <label>
+          <span>Hours</span>
+          <textarea name="hours" placeholder="e.g., 9:00 AM – 6:00 PM (Tue closed)" required></textarea>
+        </label>
+        <label>
+          <span>Notes</span>
+          <textarea name="notes" placeholder='Use like **Shopping List: Mom** - … (optional)'></textarea>
+        </label>
+        <label>
+          <span>Price (KRW)</span>
+          <input required name="priceKRW" type="number" min="0" step="100" value="0" />
+        </label>
+        <label>
+          <span>Quantity</span>
+          <input required name="count" type="number" min="1" step="1" value="1" />
+        </label>
+        <div class="modal-actions">
+          <button class="btn" type="submit">Save</button>
+          <button class="btn secondary" type="button" id="cancelAdd">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Budget Tracker (floating bottom-right) -->
+  <aside id="budget" class="budget">
+    <button id="budgetToggle" class="budget-toggle" aria-label="Toggle budget panel">˅</button>
+    <div class="budget-body">
+      <div class="budget-row"><span>Total Budget</span><strong id="bTotal">₩0 / $0</strong></div>
+      <div class="budget-row"><span>Spent</span><strong id="bSpent">₩0 / $0</strong></div>
+      <div class="budget-row"><span>Remaining</span><strong id="bRemain">₩0 / $0</strong></div>
+      <div class="progress"><div id="bBar" class="progress-bar" style="width:0%"></div></div>
+    </div>
+  </aside>
+
+  <footer class="site-footer">
+    <p>© 2025 Master Korea Itinerary </p>
+    <p><a href="mailto:pedari.nastaran@gmail.com">Email Me @ pedari.nastaran@gmail.com</a></p>
+  </footer>
+
+  <!-- 🔹 Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAiaYSn4OQ6bba3aVG8pD-h5ktEYGFr-0A",
+      authDomain: "master-korea-itinerary.firebaseapp.com",
+      projectId: "master-korea-itinerary",
+      storageBucket: "master-korea-itinerary.appspot.com",
+      messagingSenderId: "359190377711",
+      appId: "1:359190377711:web:c7f4b948bf9a263e42d71a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+  </script>
+
+  <!-- 🔹 Your main JS -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
