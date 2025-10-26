@@ -110,6 +110,8 @@ export const attractions = [
     { category: "Shopping List", name: "Rom&nd Juicy Lasting Tint", address: "Olive Young / Lalavla", hours: "N/A", notes: "**Shopping List: Nas (Sister)** - Glossy, long-lasting tint.", priceKRW: 14000 },
     { category: "Shopping List", name: "Anua Heartleaf 77% Soothing Toner", address: "Olive Young", hours: "N/A", notes: "**Shopping List: Nas (Sister)** - Soothing toner, often available in jumbo size sets.", priceKRW: 30000 }
 ];
+window.attractions = attractions;
+
 /* =============================
    Constants & State
 ============================= */
@@ -150,18 +152,42 @@ function pastelClassFor(name) {
 async function save() {
     try {
         const colRef = collection(window.db, "itinerary");
+
+        // 🔹 Helper: make Firestore-safe document IDs
+        function safeDocId(name) {
+            return String(name).replace(/[\/\\#?.[\]]/g, "-");
+        }
+
         for (const item of items) {
             item.priceKRW = Number(item.priceKRW) || 0;
             item.count = Number(item.count) || 1;
-            await setDoc(doc(colRef, item.name), item);
+
+            // 🔹 Extract owner name from notes (e.g., "**Shopping List: Mom**")
+            const match = item.notes?.match(/\*\*Shopping List:\s*([^)]+)\)/);
+            const owner = match
+                ? match[1].trim().replace(/\s+/g, "_") // use name in parentheses
+                : "General";
+
+            // 🔹 Combine item name + owner for a unique Firestore ID
+            const safeName = safeDocId(`${item.name}-${owner}`);
+
+            await setDoc(doc(colRef, safeName), item);
         }
+
+        // 🔹 Persist locally too
         localStorage.setItem(STORAGE_ITEMS, JSON.stringify(items));
         localStorage.setItem(STORAGE_ARCH, JSON.stringify(Array.from(archived)));
-        localStorage.setItem(STORAGE_UI, JSON.stringify({ budgetCollapsed: state.budgetCollapsed }));
+        localStorage.setItem(
+            STORAGE_UI,
+            JSON.stringify({ budgetCollapsed: state.budgetCollapsed })
+        );
+
     } catch (err) {
         console.error("⚠️ Firestore save failed:", err);
     }
 }
+
+
 
 async function load() {
     try {
@@ -403,10 +429,10 @@ async function init() {
     renderBudget();
 
     // Filters & navigation
-    el.category.onchange = () => { 
-        state.category = el.category.value; 
-        renderMain(); 
-        renderArchive(); 
+    el.category.onchange = () => {
+        state.category = el.category.value;
+        renderMain();
+        renderArchive();
     };
     el.openArchive.onclick = () => go("archive");
     el.backToMain.onclick = () => go("main");
@@ -420,10 +446,10 @@ async function init() {
     hookAddForm();
 
     // Budget toggle
-    el.budgetToggle.onclick = () => { 
-        state.budgetCollapsed = !state.budgetCollapsed; 
-        save(); 
-        renderBudget(); 
+    el.budgetToggle.onclick = () => {
+        state.budgetCollapsed = !state.budgetCollapsed;
+        save();
+        renderBudget();
     };
 }
 
